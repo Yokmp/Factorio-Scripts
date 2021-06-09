@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 
-""" Factorio mod deployement script """
+""" Factorio mod deployement script
+Just move you code in a separate Directory like .../Deploy/ModName
+This will be your root/Workspace which is preset to "."
+The script will create a tempDir in which it copies all files and folders
+and then creates a zip file which is moved to ./_release_/Modname_version.zip
+if deploy_mod is true the zipfiles will be copied to the deploy_dir which is preset to Factorio/mods.
+All options can be changed to your liking.
+
+source: https://github.com/Yokmp/Factorio-Scripts
+author: Yokmp
+"""
 
 import os ,sys, shutil, zipfile, json, platform
 
@@ -20,7 +30,7 @@ version     = ""
 
 ## Path settings - deploy_dir should end in factorio/mods so a new version can be tested easily
 if platform.system() == "Windows":
-  deploy_dir = os.path.join("F:\\", "Games", "Factorio_ModTest", "mods") # os.path.join(user_dir, "AppData", "Roaming", "Factorio", "mods")
+  deploy_dir = os.path.join(user_dir, "AppData", "Roaming", "Factorio", "mods")
 else:
   deploy_dir = os.path.join(user_dir, ".factorio", "mods")
 #endregion -----------------------------------
