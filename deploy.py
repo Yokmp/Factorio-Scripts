@@ -16,7 +16,7 @@ import os, sys, shutil, zipfile, json, platform, getopt
 
 #region ----------------------------------- Boring Settings
 deploy_mod  = True      # create a zip file or not
-silent      = False     # do not print anything
+verbose     = False     # print processed files
 ## Blacklist
 exclude     = ["_release_", "vscode", "workspace", ".git", ".py", ".xcf"]
 
@@ -58,22 +58,15 @@ if (version == ""):
   print("\nNo version found. Aborting.")
   sys.exit(-1)
 
-## ----------------------------------- Secret Settings
-mod_name_full   = mod_name + "_" + version
-mod_deploy_dir  = os.path.join(deploy_dir, mod_name_full)
-zip_name        = mod_name_full + '.zip'
-zip_file_path   = os.path.join(workspace, "_release_")
-zip_file        = os.path.join(zip_file_path, mod_name + "_" + version+".zip")
-zip_temp_dir    = os.path.join(workspace, mod_name_full)
-## -----------------------------------
 ## Arguments
 arg = sys.argv[1:]
 try:
-  opts, args = getopt.getopt(arg,"sd:")
+  opts, args = getopt.getopt(arg,"vd:",["version="])
 except getopt.GetoptError:
-  print("Usage:\t%s -d:bool -s" %sys.argv[0])
-  print("%s -d\tbool\t - Deploy Mod or not " %sys.argv[0])
-  print("%s -s\t\t - silent: don't show processed files and override any existing file without prompt" %sys.argv[0])
+  print("Usage:\t%s -d:bool -v" %os.path.basename(__file__))
+  print("%s -d\tbool\t - Deploy Mod or not " %os.path.basename(__file__))
+  print("%s -v\t\t - verbose: show processed files and override any existing file without prompt" %os.path.basename(__file__))
+  print("%s -version\tx.y.z\t - version: show processed files and override any existing file without prompt" %os.path.basename(__file__))
   sys.exit(2)
   
 for opt, arg in opts:
@@ -83,9 +76,24 @@ for opt, arg in opts:
     elif (arg == "false" or arg == "False"):
       deploy_mod = False
     else: print("%s -d\tbool - Deploy Mod, False will override any existing file without prompt" %sys.argv[0])
-  elif opt == "-s":
-    silent = True
-    
+  elif opt == "-v":
+    verbose = True
+  elif opt == "--version": # json handling needs function
+    # version = arg
+    # with open("info.json", "w") as info:
+    #   json.dump({"version": version}, info)
+    # print(version)
+    pass
+
+## ----------------------------------- Secret Settings
+mod_name_full   = mod_name + "_" + version
+mod_deploy_dir  = os.path.join(deploy_dir, mod_name_full)
+zip_name        = mod_name_full + '.zip'
+zip_file_path   = os.path.join(workspace, "_release_")
+zip_file        = os.path.join(zip_file_path, mod_name + "_" + version+".zip")
+zip_temp_dir    = os.path.join(workspace, mod_name_full)
+## -----------------------------------
+
 file_count = sum(len(files) for _, _, files in os.walk(workspace))
 # sys.exit(-1)
 
@@ -102,7 +110,7 @@ def file_size(_size):
   while _size > 1024: _size /= 1024; n += 1
   return round(_size, 2), power_labels[n]+'B'
 ## ----------------------------------- COLLECTING
-if silent: i = 0
+i = 0
 for root, subdirs, files in os.walk(workspace):
   if match_pattern(root): continue
   for filename in files:
@@ -113,10 +121,10 @@ for root, subdirs, files in os.walk(workspace):
     if os.path.isfile(file_path):
       fp = os.path.join(root, filename)
       f_size += os.path.getsize(fp)
-      if silent: 
-        print("\rCollecting: [{0}/{1}]".format(i,file_count), end='' ); i+=1
-      else:  
+      if verbose:
         print('File: %s \t %s' % (mod_name_full, filename))
+      else:
+        print("\rCollecting: [{0}/{1}]".format(i,file_count), end='' ); i+=1
       os.makedirs(os.path.join(zip_temp_dir, os.path.dirname(file_path[2:])), exist_ok=True)
       shutil.copy(file_path, os.path.join(zip_temp_dir, os.path.dirname(file_path[2:])))
 
@@ -126,7 +134,7 @@ print("\rCollected: [{0}] ({1} {2})".format(file_count, f_size[0], f_size[1]))
 ## ----------------------------------- ZIPING
 if os.path.exists(zip_file):
   print("\n%s already exists." %zip_file)
-  quest = input("[R]emove or [A]bort? ") if deploy_mod == True else "r"
+  quest = input("[R]emove or [A]bort? ") if verbose == True else "r"
   if quest == "r" or quest == "R":
     os.remove(zip_file)
   else:
