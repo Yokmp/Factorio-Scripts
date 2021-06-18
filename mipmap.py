@@ -24,7 +24,7 @@ arg = sys.argv[1:]
 try:
     opts, args = getopt.getopt(arg, "cs:m:i:o:", ["in=", "out="])
 except getopt.GetoptError:
-    print("Usage:\t%s -s -m -i -o [--out=] [--in=]\n" % os.path.basename(__file__))
+    print("Usage:\t%s -c -s -m -i -o [--out=] [--in=]\n" % os.path.basename(__file__))
     print("%s -c\t\t - crop canvas " % os.path.basename(__file__))
     print("%s -s\t\t - set icon size " % os.path.basename(__file__))
     print("%s -m\t\t - set mipmap amount " % os.path.basename(__file__))
