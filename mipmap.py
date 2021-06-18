@@ -8,23 +8,25 @@
 # python -m pip install --upgrade Pillow
 
 from PIL import Image
-import os, sys, math, platform, getopt
+import os, sys, math, platform, getopt, json
 
 
-# # ----------------------------------- Settings
+# # ----------------------------------- Presets
 finput              = "graphics/_single/"
 foutput             = "graphics/_multi/"
 min_icon_size   	= 32
 max_icon_size       = 64
 mipmap_levels       = 4
 crop_image          = False
+verbose             = False
 
 # # ----------------------------------- Arguments
 arg = sys.argv[1:]
 try:
-    opts, args = getopt.getopt(arg, "cs:m:i:o:", ["in=", "out="])
+    opts, args = getopt.getopt(arg, "vcs:m:i:o:", ["in=", "out="])
 except getopt.GetoptError:
-    print("Usage:\t%s -c -s -m -i -o [--out=] [--in=]\n" % os.path.basename(__file__))
+    print("Usage:\t%s -v -c -s -m -i -o [--out=] [--in=]\n" % os.path.basename(__file__))
+    print("%s -v\t\t - verbose " % os.path.basename(__file__))
     print("%s -c\t\t - crop canvas " % os.path.basename(__file__))
     print("%s -s\t\t - set icon size " % os.path.basename(__file__))
     print("%s -m\t\t - set mipmap amount " % os.path.basename(__file__))
@@ -33,31 +35,33 @@ except getopt.GetoptError:
     sys.exit(2)
 
 for opt, arg in opts:
+    if opt in "-v":
+        verbose = True
     if opt in "-c":
         try:
             crop_image = True
         except:
-            print("\t-s\ttype error: integer expected!"); sys.exit(-1)
+            print("\t-s\ttype error: integer expected. Aborting."); sys.exit(-1)
     if opt in "-s":
         try:
             max_icon_size = int(arg)
             max_icon_size = max_icon_size if max_icon_size % 2 == 0 else min_icon_size
             max_icon_size = max_icon_size if max_icon_size > min_icon_size else min_icon_size
         except:
-            print("\t-s\ttype error: integer expected!"); sys.exit(-1)
+            print("\t-s\ttype error: integer expected. Aborting"); sys.exit(-1)
     elif opt in "-m":
         try:
             mipmap_levels = int(arg)
             mipmap_levels = mipmap_levels if mipmap_levels > 0 else 1
         except:
-            print("\t-s\ttype error: integer expected!"); sys.exit(-1)
+            print("\t-s\ttype error: integer expected. Aborting."); sys.exit(-1)
     elif opt in ("-i", "--in"):
             if not os.path.exists(arg):
-                print("Path %s doesn't exist!" %arg); sys.exit(-1)
+                print("Path %s doesn't exist. Aborting." %arg); sys.exit(-1)
             finput = arg
     elif opt in ("-o", "--out"):
             if not os.path.exists(arg):
-                print("Path %s doesn't exist!" %arg); sys.exit(-1)
+                print("Path %s doesn't exist. Aborting." %arg); sys.exit(-1)
             foutput = arg
 
 
@@ -109,23 +113,54 @@ def file_size(_size):
     return round(_size, 2), power_labels[n]+'B'
 
 
+
+# # ----------------------------------- Reading JSON
+with open("info.json") as info:
+    js = json.load(info)
+    version = js["version"]
+    mod_name = js["name"]
+    mod_title = js["title"]
+
+if (mod_name == ""):
+    print("\nNo name found. Aborting.")
+    sys.exit(-1)
+
+if (mod_title == ""):
+    print("\nNo title found. Aborting.")
+    sys.exit(-1)
+
+if (version == ""):
+    print("\nNo version found. Aborting.")
+    sys.exit(-1)
+
+
 # # ----------------------------------- Loop over Files
 file_count = sum(len(files) for _, _, files in os.walk(os.path.join(".",finput)))
-width = lambda w: w*(1-(1/2)**mipmap_levels)*2
-text = " Generating "+str(file_count)+" Mimaps "
-f_size = 0
+# width = max_icon_size*(1-(1/2)**mipmap_levels)*2
+width = math.floor(max_icon_size*1.875)
+text = " Generating Mipmaps for: " + mod_title + " - version: " + version + " "
+print("\n"+text.center(len(text)+20, "-"))
 
-print("\n"+text.center(len(text)+58, "-"))
-print(" Mipmaps:{0:>2}\n Size:\t{1:>5}x{2}".format(mipmap_levels, math.floor(width(max_icon_size)), max_icon_size))
+# print("\n"+text.center(len(text)+58, "-"))
+print(" Mipmaps:{0:>2}\n Size:\t{1:>5}x{2}".format(mipmap_levels, width, max_icon_size))
+print(" Files:{0:>4}\n".format(file_count))
 
-i= 1
+i = 1
+if verbose: print("Generating:")
 for root, dirs, files in os.walk(finput):
     for filename in files:
         if ".png" in filename:
             fp = os.path.join(root, filename)
-            f_size += os.path.getsize(fp)
-            print("{0}: {1} - {2}".format(i, filename, file_size(f_size)))
+            f_size = file_size(os.path.getsize(fp))
+            if verbose:
+                print(" {0}: {1} \t {2} {3}".format(i, filename, f_size[0], f_size[1]))
+            else:
+                print("\rGenerating: [{0}/{1}]".format(i, file_count), end='')
+            
             create_mipmap(os.path.join(foutput, filename),
                           os.path.join(finput, filename),
                           max_icon_size, mipmap_levels )
             i+=1
+
+success = " All mipmaps generated "
+print("\n"+success.center(len(text)+20, "-")+"\n")
