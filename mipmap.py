@@ -6,6 +6,8 @@
 #
 # You need the Pillow module for this script to work
 # python -m pip install --upgrade Pillow
+#
+# version 1.0.0
 
 from PIL import Image
 import os, sys, math, platform, getopt, json
@@ -38,10 +40,10 @@ for opt, arg in opts:
     if opt in "-v":
         verbose = True
     if opt in "-c":
-        try:
+        # try:
             crop_image = True
-        except:
-            print("\t-s\ttype error: integer expected. Aborting."); sys.exit(-1)
+        # except:
+            # print("\t-s\ttype error: integer expected. Aborting."); sys.exit(-1)
     if opt in "-s":
         try:
             max_icon_size = int(arg)
@@ -65,7 +67,7 @@ for opt, arg in opts:
             foutput = arg
 
 
-# # ----------------------------------- Format
+# # ----------------------------------- Format (just in case ...)
 if platform.system() == "Windows":
     finput  = finput.replace("/", "\\")
     foutput = foutput.replace("/", "\\")
@@ -113,25 +115,17 @@ def file_size(_size):
     return round(_size, 2), power_labels[n]+'B'
 
 
-
 # # ----------------------------------- Reading JSON
 with open("info.json") as info:
     js = json.load(info)
     version = js["version"]
-    mod_name = js["name"]
     mod_title = js["title"]
 
-if (mod_name == ""):
-    print("\nNo name found. Aborting.")
-    sys.exit(-1)
-
 if (mod_title == ""):
-    print("\nNo title found. Aborting.")
-    sys.exit(-1)
+    mod_title = "unknown mod"
 
 if (version == ""):
-    print("\nNo version found. Aborting.")
-    sys.exit(-1)
+    version = "?.?.?"
 
 
 # # ----------------------------------- Loop over Files
