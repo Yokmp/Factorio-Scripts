@@ -1,6 +1,7 @@
 # A small tool collection for Factorio Modding
 
-All Python scripts are written under 3.9.3 so you need at least 3.6 (if i remember correctly)
+All Python scripts are written under 3.9.3 so you need at least 3.6 (if i remember correctly).
+
 If you have any suggestion then please let me know.
 
 ---
@@ -21,7 +22,7 @@ Your_Mod
 
 
 There are some settings on top of the file like paths and exclude.
-Excluding files and folders goes by name and are read as literals so a dot is just a dot.  
+Excluding files and folders goes by name and are read as literals (so a dot is just a dot).  
 This means, you should be as exact as possible. So look into your zip and check just to be shure ;)
 
 Mod-version and name are read from the info.json file.  
